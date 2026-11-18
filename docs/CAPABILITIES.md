@@ -263,7 +263,7 @@ Pass `--project <path>.rnrproj` to any `generate` command to list every object i
 | Command | Emits |
 |---------|-------|
 | `generate table` | `AxTable` XML with fields, indexes, relations (9 patterns) |
-| `generate class` | `AxClass` skeleton |
+| `generate class` | `AxClass` skeleton, or complete class metadata from `--declaration-file` and repeated `--method-file` X++ inputs. The declaration supplies attributes, interfaces and member variables; each method file supplies one complete method. Normal grounding, install and verify paths apply. |
 | `generate coc` | Chain-of-Command extension class |
 | `generate form` | `AxForm` XML (9 patterns: SimpleList, DetailsMaster, Workspace …) |
 | `generate datasource-method` | Add/override a method on a form datasource (form-level `SourceCode`); `--list` shows overridable methods |
@@ -308,6 +308,31 @@ Pass `--project <path>.rnrproj` to any `generate` command to list every object i
 | `modify add-enum-value` | Add a value to a live base enum — positional, never a hard-coded ordinal. |
 | `modify add-control` | Add a control to a live form's Design, optionally inside `--parent` and bound to `--datasource`/`--datafield`. |
 | `modify batch` | Several steps in one read-edit-write: `modify batch <KIND> <OBJECT> --operations <JSON>` (or `--operations-file <PATH>`, `-` for stdin) applies them to one object, and a refused step discards the batch. When the steps name their own objects (`{"kind":"table","object":"MyTable","op":"property",…}`) the kind and object arguments become optional defaults, and one process with one bridge applies every object (#268): steps are grouped by object, each object is all-or-nothing, the others still run, and `data.results` reports each object. `BATCH_PARTIAL` when some were written and some refused; `data.undo` is the `d365fo undo --steps N` that reverts the batch. `--dry-run` applies the steps in memory and reports them without journaling or writing. MCP: `modify_object` `operations` (+ `dryRun`). |
+
+#### Class source inputs
+
+For a new feature class or other class that needs more than a skeleton, supply
+plain X++ files rather than constructing AOT XML:
+
+```sh
+d365fo generate class HSOSalesOrderIntegrationFeature \
+  --declaration-file C:/scratch/feature-declaration.xpp \
+  --method-file C:/scratch/instance.xpp \
+  --method-file C:/scratch/isEnabledByDefault.xpp \
+  --install-to HSO --verify --output json
+```
+
+Supply all required methods, repeating `--method-file` as needed. The declaration
+file contains the matching class header and member variables inside braces,
+including any class attributes and interfaces. Methods belong in their own input
+files. Duplicate method names, embedded methods, macro-expanded declarations,
+bodyless methods and conflicting header flags are refused. `--declaration-file`
+cannot be combined with `--extends` or `--non-final`. The writer refuses existing
+output unless `--overwrite` is explicit; that option replaces the complete class,
+so preserve all existing members and methods when deliberately regenerating one.
+For adding a method to an existing class, use `modify add-method` instead. MCP
+`generate_object` provides the same source inputs as `declarationFile` and
+`methodFiles`.
 
 #### Extension fallback
 

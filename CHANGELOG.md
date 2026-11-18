@@ -19,6 +19,16 @@ was ported from.
 
 ## [Unreleased]
 
+### Added — create complete classes from X++ declaration and method files
+
+`generate class` accepts `--declaration-file` for class attributes, its header,
+interfaces and member variables, and repeated `--method-file` inputs for complete
+X++ methods. This permits feature classes and other non-skeleton classes without
+caller-authored AOT XML. The CLI constructs canonical AxClass metadata, keeps the
+existing grounding/reference/BP and install/verify paths, and refuses duplicate
+methods, mismatched class names, malformed inputs and accidental overwrites.
+MCP `generate_object` exposes the same inputs as `declarationFile` and `methodFiles`.
+
 ### Added — `labels audit`: labels used but defined nowhere, missing translations, labels nobody uses (#272)
 
 Labels are where an ISV release most often ships a visible mistake: a token used in code or

@@ -1389,12 +1389,13 @@ public sealed partial class ToolHandlers
         System.Xml.Linq.XDocument doc, string name, string kind, string axSubfolder,
         string? installTo, string? outPath, bool overwrite, object extra,
         string? groundingToken = null, string? targetObject = null,
-        IEnumerable<string>? requiredSymbols = null, IEnumerable<string>? warnings = null)
+        IEnumerable<string>? requiredSymbols = null, IEnumerable<string>? warnings = null,
+        IEnumerable<string>? generatedObjects = null)
     {
         var gate = D365FO.Core.Scaffolding.GroundingGate.Check(
             groundingToken, targetObject ?? name, doc,
             requiredMethods: null, requiredSymbols: requiredSymbols,
-            requested: null, repository: _repo);
+            requested: null, repository: _repo, generatedObjects: generatedObjects);
         if (gate.Failure is not null) return gate.Failure;
 
         var path = outPath;
@@ -1591,13 +1592,19 @@ public sealed partial class ToolHandlers
 
     public ToolResult<object> GenerateClass(
         string name, string? extends, bool nonFinal,
-        string? installTo, string? outPath, bool overwrite, string? groundingToken = null)
+        string? installTo, string? outPath, bool overwrite, string? groundingToken = null,
+        string? declarationFile = null, string[]? methodFiles = null)
     {
         if (string.IsNullOrWhiteSpace(name))
             return ToolResult<object>.Fail("BAD_INPUT", "name is required.");
-        var doc = D365FO.Core.Scaffolding.XppScaffolder.Class(name, extends, !nonFinal);
+        System.Xml.Linq.XDocument doc;
+        try { doc = D365FO.Core.Scaffolding.ClassSourceFiles.Create(name, extends, nonFinal, declarationFile, methodFiles); }
+        catch (Exception ex) when (ex is ArgumentException or IOException or UnauthorizedAccessException)
+        {
+            return ToolResult<object>.Fail(D365FoErrorCodes.BadInput, ex.Message);
+        }
         return WriteScaffold(doc, name, "AxClass", "AxClass", installTo, outPath, overwrite, new { extends },
-            groundingToken);
+            groundingToken, generatedObjects: [name]);
     }
 
     public ToolResult<object> GenerateCoc(

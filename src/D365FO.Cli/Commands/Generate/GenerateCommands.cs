@@ -9,6 +9,10 @@ using D365FO.Core.Bridge;
 
 namespace D365FO.Cli.Commands.Generate;
 
+/// <summary>A source input consumed into the document, not a requested metadata property.</summary>
+[AttributeUsage(AttributeTargets.Property)]
+internal sealed class ScaffoldSourceFileAttribute : Attribute { }
+
 public abstract class GenerateSettings : D365OutputSettings
 {
     [CommandOption("--out <PATH>")]
@@ -120,6 +124,7 @@ internal static class GenerateInstaller
         {
             if (prop.DeclaringType is null || prop.DeclaringType == typeof(GenerateSettings)) continue;
             if (!prop.DeclaringType.IsSubclassOf(typeof(GenerateSettings))) continue;
+            if (prop.IsDefined(typeof(ScaffoldSourceFileAttribute), inherit: true)) continue;
 
             var option = OptionNameOf(prop);
             if (option is null) continue;
@@ -900,6 +905,16 @@ public sealed class GenerateClassCommand : Command<GenerateClassCommand.Settings
 
         [CommandOption("--non-final")]
         public bool NonFinal { get; init; }
+
+        [ScaffoldSourceFile]
+        [CommandOption("--declaration-file <PATH>")]
+        [System.ComponentModel.Description("X++ class declaration file: attributes, class header, interfaces and member variables inside braces. Methods belong in --method-file. Cannot combine with --extends or --non-final.")]
+        public string? DeclarationFile { get; init; }
+
+        [ScaffoldSourceFile]
+        [CommandOption("--method-file <PATH>")]
+        [System.ComponentModel.Description("X++ source file declaring one complete method. Repeat for multiple methods; duplicate names are refused. The CLI generates the AOT XML.")]
+        public string[] MethodFiles { get; init; } = [];
     }
 
     public override int Execute(CommandContext ctx, Settings settings)
@@ -908,11 +923,17 @@ public sealed class GenerateClassCommand : Command<GenerateClassCommand.Settings
         if (string.IsNullOrWhiteSpace(settings.Name))
             return RenderHelpers.Render(kind, ToolResult<object>.Fail("BAD_INPUT", "Class name required."));
 
-        var doc = XppScaffolder.Class(settings.Name, settings.Extends, !settings.NonFinal);
+        System.Xml.Linq.XDocument doc;
+        try { doc = ClassSourceFiles.Create(settings.Name, settings.Extends, settings.NonFinal, settings.DeclarationFile, settings.MethodFiles); }
+        catch (Exception ex) when (ex is ArgumentException or IOException or UnauthorizedAccessException)
+        {
+            return RenderHelpers.Render(kind, ToolResult<object>.Fail(D365FoErrorCodes.BadInput, ex.Message));
+        }
 
         var gate = GenerateInstaller.Gate(
             settings, settings.Name, doc,
-            requiredSymbols: string.IsNullOrWhiteSpace(settings.Extends) ? null : new[] { settings.Extends! });
+            requiredSymbols: string.IsNullOrWhiteSpace(settings.Extends) ? null : new[] { settings.Extends! },
+            generatedObjects: [settings.Name]);
         if (gate.Failure is not null) return RenderHelpers.Render(kind, gate.Failure);
 
         return GenerateInstaller.Emit(

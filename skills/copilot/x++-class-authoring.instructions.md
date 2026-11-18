@@ -57,6 +57,30 @@ out where inheritance is actually intended. Add methods with
 `d365fo modify add-method`, `generate event-handler` or `generate coc` —
 never by rewriting the file wholesale.
 
+For a **new class** that needs attributes, interfaces or member variables (for
+example an `IFeatureMetadata` feature class), write plain X++ input files in the
+task's scratch/artifacts directory and let the CLI serialize the metadata:
+
+```sh
+d365fo generate class HSOSalesOrderIntegrationFeature \
+  --declaration-file c:/scratch/feature-declaration.xpp \
+  --method-file c:/scratch/instance.xpp \
+  --method-file c:/scratch/isEnabledByDefault.xpp \
+  --install-to HSO --verify --output json
+```
+
+The declaration file contains attributes, the matching class header (including
+`implements`/`extends` if needed) and member variables inside the class braces.
+Each method file contains exactly one complete method, including its signature
+and body; repeat `--method-file` for all required interface methods. Input files
+are **X++**, not AOT XML. Do not combine `--declaration-file` with `--extends` or
+`--non-final`. A complete class source must be split into its declaration and
+method files. Macro-expanded declarations and bodyless methods are not supported.
+The normal grounding/reference/BP gates and metadata installation still apply;
+refresh the model index before generating dependents that reference this class.
+`--overwrite` regenerates the entire class, so use it only deliberately with all
+source preserved; prefer `modify add-method` / `modify method` for existing classes.
+
 Two commands, one per case. Sort the methods into ones that already exist and
 new ones before the edit starts:
 

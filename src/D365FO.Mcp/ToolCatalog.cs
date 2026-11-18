@@ -524,7 +524,7 @@ public static class ToolCatalog
             + "identifier cannot be proved. Two families share this one tool:\n" +
             "• WRITE to disk (requires `installTo` model name — resolves the path from the configured packages " +
             "paths — or `out` explicit path): table (pattern-aware, `fields` \"<name>:<edt>[:mandatory]\", " +
-            "`pattern` main|transaction|parameter|group|reference|miscellaneous) · class (`extends`, `nonFinal`) · " +
+            "`pattern` main|transaction|parameter|group|reference|miscellaneous) · class (`extends`, `nonFinal`, or `declarationFile` and `methodFiles` for X++ source) · " +
             "coc (`target` + `methods`, writes <target>_Extension) · form (`table`, `pattern` SimpleList|" +
             "SimpleListDetails|DetailsMaster|DetailsTransaction|Dialog|TableOfContents|Lookup|ListPage|Workspace, " +
             "`caption`, `fields`, `linesTable`).\n" +
@@ -572,6 +572,7 @@ public static class ToolCatalog
             Schema(("objectType", "string", true), ("name", "string", false), ("label", "string", false),
                    ("fields", "array", false), ("pattern", "string", false),
                    ("extends", "string", false), ("nonFinal", "boolean", false),
+                   ("declarationFile", "string", false), ("methodFiles", "array", false),
                    ("target", "string", false), ("methods", "array", false),
                    ("table", "string", false), ("caption", "string", false), ("linesTable", "string", false),
                    ("size", "integer", false), ("values", "array", false),
@@ -624,7 +625,7 @@ public static class ToolCatalog
                 // Write-to-disk objectTypes.
                 "class" => h.GenerateClass(Str(p, "name"), StrOrNull(p, "extends"), Bool(p, "nonFinal"),
                             StrOrNull(p, "installTo"), StrOrNull(p, "out"), Bool(p, "overwrite"),
-                            StrOrNull(p, "groundingToken")),
+                            StrOrNull(p, "groundingToken"), StrOrNull(p, "declarationFile"), StrArray(p, "methodFiles")),
                 "coc"   => h.GenerateCoc(Str(p, "target"), StrArray(p, "methods") ?? Array.Empty<string>(),
                             StrOrNull(p, "installTo"), StrOrNull(p, "out"), Bool(p, "overwrite"),
                             StrOrNull(p, "groundingToken")),

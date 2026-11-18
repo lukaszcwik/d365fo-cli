@@ -315,11 +315,11 @@ For a new feature class or other class that needs more than a skeleton, supply
 plain X++ files rather than constructing AOT XML:
 
 ```sh
-d365fo generate class HSOSalesOrderIntegrationFeature \
+d365fo generate class ABCSalesOrderIntegrationFeature \
   --declaration-file C:/scratch/feature-declaration.xpp \
   --method-file C:/scratch/instance.xpp \
   --method-file C:/scratch/isEnabledByDefault.xpp \
-  --install-to HSO --verify --output json
+  --install-to ABC --verify --output json
 ```
 
 Supply all required methods, repeating `--method-file` as needed. The declaration

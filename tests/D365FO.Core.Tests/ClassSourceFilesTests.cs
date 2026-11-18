@@ -19,10 +19,10 @@ public sealed class ClassSourceFilesTests : IDisposable
     [Fact]
     public void Feature_declaration_and_method_files_become_canonical_source_nodes()
     {
-        const string declaration = "[ExportAttribute(identifierStr(Microsoft.Dynamics.ApplicationPlatform.FeatureExposure.IFeatureMetadata))]\ninternal final class HSOFeature implements IFeatureMetadata\n{\n    private static HSOFeature singleton;\n}";
-        const string instance = "public static HSOFeature instance()\n{\n    if (!singleton) { singleton = new HSOFeature(); }\n    return singleton;\n}";
-        const string label = "public str label() { return '@HSO:Feature'; }";
-        var doc = ClassSourceFiles.Create("HSOFeature", null, false, Source("declaration", declaration),
+        const string declaration = "[ExportAttribute(identifierStr(Microsoft.Dynamics.ApplicationPlatform.FeatureExposure.IFeatureMetadata))]\ninternal final class ABCFeature implements IFeatureMetadata\n{\n    private static ABCFeature singleton;\n}";
+        const string instance = "public static ABCFeature instance()\n{\n    if (!singleton) { singleton = new ABCFeature(); }\n    return singleton;\n}";
+        const string label = "public str label() { return '@ABC:Feature'; }";
+        var doc = ClassSourceFiles.Create("ABCFeature", null, false, Source("declaration", declaration),
             [Source("instance", instance), Source("label", label)]);
         var roundTrip = XDocument.Parse(doc.ToString());
         var code = roundTrip.Root!.Element("SourceCode")!;

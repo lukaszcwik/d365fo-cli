@@ -69,11 +69,11 @@ example an `IFeatureMetadata` feature class), write plain X++ input files in the
 task's scratch/artifacts directory and let the CLI serialize the metadata:
 
 ```sh
-d365fo generate class HSOSalesOrderIntegrationFeature \
+d365fo generate class ABCSalesOrderIntegrationFeature \
   --declaration-file c:/scratch/feature-declaration.xpp \
   --method-file c:/scratch/instance.xpp \
   --method-file c:/scratch/isEnabledByDefault.xpp \
-  --install-to HSO --verify --output json
+  --install-to ABC --verify --output json
 ```
 
 The declaration file contains attributes, the matching class header (including

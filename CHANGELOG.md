@@ -19,6 +19,14 @@ was ported from.
 
 ## [Unreleased]
 
+### Fixed — `modify batch --help` renders its JSON example
+
+Escaped the outer operation array and nested field array in the `--operations` help
+description. Spectre.Console previously parsed those literal brackets as markup and
+failed with `Encountered malformed markup tag` before displaying the command options.
+The example still displays valid JSON. Regression coverage renders help for every
+`modify` command in the manifest and checks the batch example's literal arrays.
+
 ### Fixed — `modify property` sets one child of a property such as `SubscriberAccessLevel`
 
 `SubscriberAccessLevel` is not a value but an `AccessGrant` with six children (Correct, Create,
